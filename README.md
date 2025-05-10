@@ -1,3 +1,57 @@
+# YouTube Transcript API (Sentence-based)
+
+This is a fork of the [youtube-transcript-api](https://github.com/jdepoix/youtube-transcript-api) package that groups captions into complete sentences. This is particularly useful for language learning applications where you want to work with complete sentences rather than YouTube's default line-by-line captions.
+
+## Features
+
+- Groups captions into complete sentences using Unicode properties
+- Works across all languages
+- Maintains accurate timing information for each sentence
+- All original features of youtube-transcript-api:
+  - Get transcripts/subtitles for a given YouTube video
+  - Works with automatically generated subtitles
+  - Supports translating subtitles
+  - No headless browser required
+
+## Installation
+
+```bash
+pip install youtube-transcript-api-sentences
+```
+
+## Usage
+
+```python
+from youtube_transcript_api import YouTubeTranscriptApi
+
+# Get transcript with sentences
+transcript = YouTubeTranscriptApi().fetch('video_id', languages=['en'])
+
+# Each snippet is now a complete sentence
+for snippet in transcript:
+    print(f"Text: {snippet.text}")
+    print(f"Start: {snippet.start}s")
+    print(f"Duration: {snippet.duration}s")
+```
+
+## Differences from Original
+
+The main difference from the original package is that captions are grouped into complete sentences rather than being returned line-by-line as they appear in YouTube. This means:
+
+1. Each snippet contains a complete sentence
+2. The start time is when the first part of the sentence appears
+3. The duration spans from when the first part appears until the last part disappears
+
+This makes it much more suitable for language learning applications where you want to work with complete sentences.
+
+## License
+
+This project is licensed under the MIT license.
+
+## Credits
+
+This is a fork of [youtube-transcript-api](https://github.com/jdepoix/youtube-transcript-api) by Jonas Depoix.
+
 <h1 align="center">
   ✨ YouTube Transcript API ✨
 </h1>

@@ -4,29 +4,19 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "youtube-transcript-api"
-version = "1.0.3"
-description = "This is an python API which allows you to get the transcripts/subtitles for a given YouTube video. It also works for automatically generated subtitles, supports translating subtitles and it does not require a headless browser, like other selenium based solutions do!"
+version = "0.1.0"
+description = "A fork of youtube-transcript-api that groups captions into complete sentences"
+authors = ["Ahaan Limaye <ahaan.limaye@gmail.com>"]
 readme = "README.md"
-license = "MIT"
-authors = [
-    "Jonas Depoix <jonas.depoix@web.de>",
-]
-homepage = "https://github.com/jdepoix/youtube-transcript-api"
-repository = "https://github.com/jdepoix/youtube-transcript-api"
-keywords = [
-    "cli",
-    "subtitle",
-    "subtitles",
-    "transcript",
-    "transcripts",
-    "youtube",
-    "youtube-api",
-    "youtube-subtitles",
-    "youtube-transcripts",
-]
+packages = [{include = "youtube_transcript_api"}]
+repository = "https://github.com/ahaanlimaye/youtube-transcript-api"
+documentation = "https://github.com/ahaanlimaye/youtube-transcript-api#readme"
+keywords = ["youtube", "transcript", "api", "captions", "subtitles", "sentences"]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",

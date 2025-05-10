@@ -85,7 +85,7 @@ class _PlayabilityStatus(str, Enum):
 
 
 class _PlayabilityFailedReason(str, Enum):
-    BOT_DETECTED = "Sign in to confirm you’re not a bot"
+    BOT_DETECTED = "Sign in to confirm you're not a bot"
     AGE_RESTRICTED = "Sign in to confirm your age"
     VIDEO_UNAVAILABLE = "Video unavailable"
 
@@ -438,6 +438,54 @@ class TranscriptListFetcher:
         return unescape(_raise_http_errors(response, video_id).text)
 
 
+class SentenceDetector:
+    """
+    A class to detect sentence boundaries in text across different languages.
+    Uses Unicode properties to identify sentence boundaries rather than
+    language-specific punctuation.
+    """
+    
+    def __init__(self):
+        import unicodedata
+        
+        def is_sentence_boundary_char(char: str) -> bool:
+            """
+            Check if a character is a sentence boundary using Unicode properties.
+            This includes:
+            - Terminal punctuation (Unicode category 'Po')
+            - Line breaks (Unicode category 'Zl' or 'Zp')
+            - Paragraph breaks (Unicode category 'Zp')
+            """
+            category = unicodedata.category(char)
+            return category in ('Po', 'Zl', 'Zp')
+            
+        self._is_sentence_boundary_char = is_sentence_boundary_char
+    
+    def is_sentence_boundary(self, text: str) -> bool:
+        """
+        Check if the text ends with a sentence boundary character.
+        """
+        return text.strip() and self._is_sentence_boundary_char(text.strip()[-1])
+    
+    def split_into_sentences(self, text: str) -> List[str]:
+        """
+        Split text into sentences based on Unicode sentence boundaries.
+        """
+        sentences = []
+        current = []
+        
+        for char in text:
+            current.append(char)
+            if self._is_sentence_boundary_char(char):
+                sentences.append(''.join(current).strip())
+                current = []
+                
+        if current:  # Add any remaining text
+            sentences.append(''.join(current).strip())
+            
+        return [s for s in sentences if s]  # Remove empty sentences
+
+
 class _TranscriptParser:
     _FORMATTING_TAGS = [
         "strong",  # important
@@ -454,6 +502,7 @@ class _TranscriptParser:
 
     def __init__(self, preserve_formatting: bool = False):
         self._html_regex = self._get_html_regex(preserve_formatting)
+        self._sentence_detector = SentenceDetector()
 
     def _get_html_regex(self, preserve_formatting: bool) -> Pattern[str]:
         if preserve_formatting:
@@ -465,7 +514,8 @@ class _TranscriptParser:
         return html_regex
 
     def parse(self, raw_data: str) -> List[FetchedTranscriptSnippet]:
-        return [
+        # First get all raw snippets
+        raw_snippets = [
             FetchedTranscriptSnippet(
                 text=re.sub(self._html_regex, "", unescape(xml_element.text)),
                 start=float(xml_element.attrib["start"]),
@@ -474,6 +524,70 @@ class _TranscriptParser:
             for xml_element in ElementTree.fromstring(raw_data)
             if xml_element.text is not None
         ]
+        
+        if not raw_snippets:
+            return []
+            
+        # Group snippets into sentences
+        sentence_snippets = []
+        current_sentence = []
+        current_start = raw_snippets[0].start
+        current_snippets = []  # Keep track of snippets that make up the current sentence
+        
+        for snippet in raw_snippets:
+            # Split the current snippet into sentences
+            sentences = self._sentence_detector.split_into_sentences(snippet.text)
+            
+            for sentence in sentences:
+                # If this is a continuation of the previous sentence
+                if current_sentence:
+                    current_sentence.append(sentence)
+                    current_snippets.append(snippet)
+                    
+                    # If this completes a sentence, create a new snippet
+                    if self._sentence_detector.is_sentence_boundary(sentence):
+                        # Calculate duration based on first and last snippet
+                        last_snippet = current_snippets[-1]
+                        duration = (last_snippet.start + last_snippet.duration) - current_start
+                        
+                        sentence_snippets.append(FetchedTranscriptSnippet(
+                            text=" ".join(current_sentence),
+                            start=current_start,
+                            duration=duration
+                        ))
+                        current_sentence = []
+                        current_snippets = []
+                        if raw_snippets.index(snippet) + 1 < len(raw_snippets):
+                            current_start = raw_snippets[raw_snippets.index(snippet) + 1].start
+                else:
+                    # Start a new sentence
+                    current_sentence = [sentence]
+                    current_snippets = [snippet]
+                    current_start = snippet.start
+                    
+                    # If this is a complete sentence, create a new snippet
+                    if self._sentence_detector.is_sentence_boundary(sentence):
+                        sentence_snippets.append(FetchedTranscriptSnippet(
+                            text=sentence,
+                            start=current_start,
+                            duration=snippet.duration
+                        ))
+                        current_sentence = []
+                        current_snippets = []
+                        if raw_snippets.index(snippet) + 1 < len(raw_snippets):
+                            current_start = raw_snippets[raw_snippets.index(snippet) + 1].start
+        
+        # Handle any remaining text
+        if current_sentence:
+            last_snippet = current_snippets[-1]
+            duration = (last_snippet.start + last_snippet.duration) - current_start
+            sentence_snippets.append(FetchedTranscriptSnippet(
+                text=" ".join(current_sentence),
+                start=current_start,
+                duration=duration
+            ))
+            
+        return sentence_snippets
 
 
 class _JsVarParser:
