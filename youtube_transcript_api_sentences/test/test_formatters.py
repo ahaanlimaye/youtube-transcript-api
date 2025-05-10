@@ -4,7 +4,7 @@ import json
 
 import pprint
 
-from youtube_transcript_api.formatters import (
+from youtube_transcript_api_sentences.formatters import (
     FetchedTranscript,
     FetchedTranscriptSnippet,
     Formatter,

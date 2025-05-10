@@ -9,7 +9,7 @@ from youtube_transcript_api import (
     FetchedTranscript,
     FetchedTranscriptSnippet,
 )
-from youtube_transcript_api._cli import YouTubeTranscriptCli
+from youtube_transcript_api_sentences._cli import YouTubeTranscriptCli
 
 
 class TestYouTubeTranscriptCli(TestCase):

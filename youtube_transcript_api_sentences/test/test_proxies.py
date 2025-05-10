@@ -1,6 +1,6 @@
 import pytest
 
-from youtube_transcript_api.proxies import (
+from youtube_transcript_api_sentences.proxies import (
     GenericProxyConfig,
     InvalidProxyConfig,
     WebshareProxyConfig,

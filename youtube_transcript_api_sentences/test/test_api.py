@@ -26,7 +26,7 @@ from youtube_transcript_api import (
     RequestBlocked,
     VideoUnplayable,
 )
-from youtube_transcript_api.proxies import GenericProxyConfig, WebshareProxyConfig
+from youtube_transcript_api_sentences.proxies import GenericProxyConfig, WebshareProxyConfig
 
 
 def get_asset_path(filename: str) -> Path:

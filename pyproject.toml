@@ -3,12 +3,12 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "youtube-transcript-api"
-version = "0.1.0"
+name = "youtube-transcript-api-sentences"
+version = "0.1.1"
 description = "A fork of youtube-transcript-api that groups captions into complete sentences"
 authors = ["Ahaan Limaye <ahaan.limaye@gmail.com>"]
 readme = "README.md"
-packages = [{include = "youtube_transcript_api"}]
+packages = [{include = "youtube_transcript_api_sentences"}]
 repository = "https://github.com/ahaanlimaye/youtube-transcript-api"
 documentation = "https://github.com/ahaanlimaye/youtube-transcript-api#readme"
 keywords = ["youtube", "transcript", "api", "captions", "subtitles", "sentences"]
